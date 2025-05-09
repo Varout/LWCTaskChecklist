@@ -1,6 +1,6 @@
 import { LightningElement, api, track } from "lwc";
-import getChecklistData from "@salesforce/apex/ChecklistController.getTasksForChecklist";
-import updateChecklist from "@salesforce/apex/ChecklistController.updateTaskStatuses";
+import getChecklistData from "@salesforce/apex/TaskChecklistPanelLWCController.getTasksForChecklist";
+import updateChecklist from "@salesforce/apex/TaskChecklistPanelLWCController.updateTaskStatuses";
 
 export default class TaskChecklistPanel extends LightningElement {
   //  Case record Id
@@ -18,12 +18,27 @@ export default class TaskChecklistPanel extends LightningElement {
   connectedCallback() {
     getChecklistData({ caseId: this.recordId })
       .then((data) => {
-        this.taskList = data;
+        this.processData(data);
         this.calculateProgress();
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
+  }
+
+  /**
+   *
+   */
+  processData(data) {
+    this.taskList = data;
+
+    //  If Task is completed, show the completion date from formula field
+    for (const task of this.taskList) {
+      task.Label = task.Subject;
+      if (task.IsCompleted__c) {
+        task.Label += " (" + task.CompletedDateFormula__c + ")";
+      }
+    }
   }
 
   /**
@@ -41,8 +56,8 @@ export default class TaskChecklistPanel extends LightningElement {
       caseId: this.recordId,
       taskIds: JSON.stringify(this.taskIdsToUpdate),
     })
-      .then((result) => {
-        this.taskList = result;
+      .then((data) => {
+        this.processData(data);
         this.calculateProgress();
         //  We did the things, enable the Submit button and empty the update list
         this.isSubmitBtnDisabled = false;
@@ -87,33 +102,5 @@ export default class TaskChecklistPanel extends LightningElement {
       //  Add TaskId to list
       this.taskIdsToUpdate.push(checkbox.name);
     }
-  }
-
-  /**
-   *
-   */
-  handleUpdateTaskStatuses() {
-    //  Nothing is selected, so don't do anything
-    if (this.taskIdsToUpdate.length === 0) {
-      return;
-    }
-
-    this.isSubmitBtnDisabled = true;
-
-    updateChecklist({
-      caseId: this.recordId,
-      taskIds: JSON.stringify(this.taskIdsToUpdate),
-    })
-      .then((result) => {
-        this.taskList = result;
-        this.calculateProgress();
-        //  We did the things, enable the Submit button and empty the update list
-        this.isSubmitBtnDisabled = false;
-        this.taskIdsToUpdate = [];
-      })
-      .catch((error) => {
-        console.error("Error updating and fetching data:", error);
-        this.isSubmitBtnDisabled = false;
-      });
   }
 }
