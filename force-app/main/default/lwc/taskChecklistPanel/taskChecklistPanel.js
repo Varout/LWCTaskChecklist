@@ -34,6 +34,8 @@ export default class TaskChecklistPanel extends LightningElement {
     //  If Task is completed, show the completion date from formula field
     for (const task of this.taskList) {
       task.Label = task.Subject;
+
+      //  Add completed date to label, can look silly with longer Subject string lengths
       if (task.IsCompleted__c) {
         task.Label += " (" + task.CompletedDateFormula__c + ")";
       }
@@ -53,7 +55,7 @@ export default class TaskChecklistPanel extends LightningElement {
     this.progress =
       this.taskList.length === 0
         ? 0
-        : totalTasksCompleted / this.taskList.length;
+        : (totalTasksCompleted / this.taskList.length) * 100;
   }
 
   /**
@@ -63,15 +65,16 @@ export default class TaskChecklistPanel extends LightningElement {
   handleCheckboxChange(event) {
     const checkbox = event.target;
 
-    if (!checkbox.checked) {
-      //  Remove TaskId from list
-      this.taskIdsToUpdate = this.taskIdsToUpdate.filter(
-        (taskId) => taskId !== checkbox.name
-      );
-    } else {
+    if (checkbox.checked) {
       //  Add TaskId to list
       this.taskIdsToUpdate.push(checkbox.name);
+      return;
     }
+
+    //  Remove TaskId from list
+    this.taskIdsToUpdate = this.taskIdsToUpdate.filter(
+      (taskId) => taskId !== checkbox.name
+    );
   }
 
   /**
