@@ -1,0 +1,41 @@
+<template>
+  <div
+    class="slds-theme_default slds-p-around_x-small checklist-border clearfix"
+  >
+    <div id="header">
+      <h2
+        class="slds-text-heading_medium slds-text-align_center slds-m-bottom_small"
+      >
+        Task Checklist
+      </h2>
+    </div>
+    <div id="progress-bar" class="slds-m-bottom_small">
+      <lightning-progress-bar
+        value="{progress}"
+        size="large"
+        variant="circular"
+      ></lightning-progress-bar>
+    </div>
+    <div id="checklist" class="slds-grid slds-wrap">
+      <template for:each="{taskList}" for:item="task">
+        <div key="{task}" class="slds-col slds-size_1-of-2">
+          <lightning-input
+            type="checkbox"
+            label="{task.Subject}"
+            name="{task.Id}"
+            checked="{task.IsCompleted__c}"
+            onchange="{handleCheckboxChange}"
+            disabled="{task.IsCompleted__c}"
+          ></lightning-input>
+        </div>
+      </template>
+    </div>
+    <div id="submit" class="slds-button slds-float_right">
+      <lightning-button
+        label="Update"
+        onclick="{handleUpdateTaskStatuses}"
+        disabled="{isSubmitBtnDisabled}"
+      ></lightning-button>
+    </div>
+  </div>
+</template>
