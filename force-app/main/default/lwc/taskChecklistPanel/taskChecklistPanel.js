@@ -3,17 +3,16 @@ import getChecklistData from "@salesforce/apex/TaskChecklistPanelLWCController.g
 import updateChecklist from "@salesforce/apex/TaskChecklistPanelLWCController.updateTaskStatuses";
 
 export default class TaskChecklistPanel extends LightningElement {
-  //  Case record Id
-  @api recordId;
+  @api recordId; //  Case record Id
 
-  @track taskList = [];
-  @track progress = 0;
-  @track isSubmitBtnDisabled = false;
+  @track taskList = []; // List of Tasks to be passed to the template for-loop
+  @track progress = 0; // Value to be fed to the progress bar
+  @track isSubmitBtnDisabled = false; // Used to disable the submit button while data is updated
 
   taskIdsToUpdate = [];
 
   /**
-   *
+   * On load, get our lists of Tasks realted to the Case
    */
   connectedCallback() {
     getChecklistData({ caseId: this.recordId })
@@ -26,7 +25,8 @@ export default class TaskChecklistPanel extends LightningElement {
   }
 
   /**
-   *
+   * Process data as it comes in.  Update Labels with the completed date if completed
+   * Updates the progress bar
    */
   processData(data) {
     this.taskList = data;
@@ -45,7 +45,7 @@ export default class TaskChecklistPanel extends LightningElement {
   }
 
   /**
-   *
+   * Calcaulates the value to assign to the progress bar
    */
   calculateProgress() {
     const totalTasksCompleted = this.taskList.filter(
@@ -59,7 +59,9 @@ export default class TaskChecklistPanel extends LightningElement {
   }
 
   /**
-   *
+   * Called from a lightning-input: checkbox. If the box is now checked, adds the 'name' value (Task.Id)
+   * to the taskIdsToUpdate stack. If the box is now unchecked, removes the 'name' value (Task.Id) from
+   * the stack
    * @param {*} event
    */
   handleCheckboxChange(event) {
@@ -78,7 +80,8 @@ export default class TaskChecklistPanel extends LightningElement {
   }
 
   /**
-   *
+   * If there are values to update, submit them to be set to Completed
+   * then repopulate our data
    */
   handleUpdateTaskStatuses() {
     //  Nothing is selected, so don't do anything
